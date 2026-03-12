@@ -1668,25 +1668,15 @@ async function generate() {
 
 function buildUserContent(inputText, img) {
   const modeContext = mode==='reply'
-    ? 'Reply to this tweet as @gacha_game_:
-"'+inputText+'"'
-    : 'Create an original tweet as @gacha_game_ about:
-'+inputText;
+    ? 'Reply to this tweet as @gacha_game_:\n"'+inputText+'"'
+    : 'Create an original tweet as @gacha_game_ about:\n'+inputText;
 
-  const msg = modeContext+'
-
-Category: '+catLabels[selectedCat]+'
-Situation: '+selectedSit+'
-Tone: '+toneLabels[selectedTone]+'
-
-Generate 3 options.';
+  const msg = modeContext+'\n\nCategory: '+catLabels[selectedCat]+'\nSituation: '+selectedSit+'\nTone: '+toneLabels[selectedTone]+'\n\nGenerate 3 options.';
 
   if (img) {
     return [
       {type:'image', source:{type:'base64', media_type:'image/png', data:img}},
-      {type:'text', text:msg+'
-
-(Image provided above — use it for context but only reference what you can actually see. Do not fabricate card details.)'}
+      {type:'text', text:msg+'\n\n(Image provided above — use it for context but only reference what you can actually see. Do not fabricate card details.)'}
     ];
   }
   return msg;
@@ -1700,12 +1690,7 @@ async function refine() {
   feedbackNotes.push(note);
   convHistory.push({
     role:'user',
-    content:'I selected this option:
-"'+selectedText+'"
-
-Feedback: '+note+'
-
-Generate 3 improved options applying this feedback.'
+    content:'I selected this option:\n"'+selectedText+'"\n\nFeedback: '+note+'\n\nGenerate 3 improved options applying this feedback.'
   });
   try {
     showSearchStatus('🔍 Refining with latest data...');
