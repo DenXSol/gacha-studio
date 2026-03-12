@@ -1546,7 +1546,7 @@ function readImg(file, key) {
   r.onload = e=>{
     imgB64[key] = e.target.result.split(',')[1];
     const zone = document.getElementById(key+'Zone');
-    zone.innerHTML = '<img src="'+e.target.result+'"/><button class="remove-img" onclick="removeImg(''+key+'')">✕</button>';
+    zone.innerHTML = '<img src="'+e.target.result+'"/><button class="remove-img" onclick="removeImg(\"'+key+'\")">✕</button>';
   };
   r.readAsDataURL(file);
 }
