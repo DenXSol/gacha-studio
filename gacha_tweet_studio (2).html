@@ -1,0 +1,1902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gacha Tweet Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:#08080f;--deep:#0d0d1a;--card:#111120;--card2:#161628;
+  --border:#1c1c32;--border2:#252540;--purple:#7B2FBE;--purple2:#9d4fd4;
+  --purple3:rgba(123,47,190,0.15);--gold:#E8C547;--gold2:rgba(232,197,71,0.12);
+  --white:#eeeef8;--muted:#5a5a78;--muted2:#8888a8;--success:#2ECC71;--danger:#e74c3c;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 700px 500px at 85% 5%,rgba(123,47,190,0.1) 0%,transparent 70%),radial-gradient(ellipse 500px 400px at 5% 90%,rgba(232,197,71,0.05) 0%,transparent 70%);pointer-events:none;z-index:0;}
+
+/* PASSWORD GATE */
+.gate{position:fixed;inset:0;background:var(--black);z-index:100;display:flex;align-items:center;justify-content:center;}
+.gate-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:48px 40px;width:360px;text-align:center;}
+.gate-logo{width:56px;height:56px;background:var(--purple);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 20px;box-shadow:0 0 32px rgba(123,47,190,0.5);}
+.gate-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;margin-bottom:6px;}
+.gate-sub{font-size:13px;color:var(--muted2);margin-bottom:28px;}
+.gate-input{width:100%;background:var(--deep);border:1px solid var(--border2);border-radius:10px;color:var(--white);font-family:'DM Mono',monospace;font-size:16px;padding:14px;outline:none;text-align:center;letter-spacing:4px;margin-bottom:12px;transition:border-color 0.2s;}
+.gate-input:focus{border-color:var(--purple);}
+.gate-input::placeholder{letter-spacing:1px;font-size:13px;color:var(--muted);}
+.gate-btn{width:100%;background:var(--purple);border:none;border-radius:10px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;padding:14px;cursor:pointer;transition:all 0.2s;}
+.gate-btn:hover{background:var(--purple2);}
+.gate-error{font-size:12px;color:var(--danger);margin-top:10px;min-height:18px;}
+.gate-member{margin-bottom:16px;}
+.gate-member select{width:100%;background:var(--deep);border:1px solid var(--border2);border-radius:10px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;padding:12px;outline:none;cursor:pointer;}
+.gate-member select option{background:var(--deep);}
+
+/* APP */
+.app{max-width:900px;margin:0 auto;padding:32px 20px 80px;position:relative;z-index:1;display:none;}
+.app.show{display:block;}
+
+/* HEADER */
+.header{display:flex;align-items:center;gap:14px;margin-bottom:32px;}
+.logo{width:44px;height:44px;background:var(--purple);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 0 28px rgba(123,47,190,0.5);}
+.header-text h1{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2.5px;line-height:1;}
+.header-text p{font-size:12px;color:var(--muted2);margin-top:3px;}
+.user-badge{margin-left:auto;background:var(--gold2);border:1px solid rgba(232,197,71,0.25);color:var(--gold);font-size:11px;font-weight:600;padding:4px 14px;border-radius:20px;letter-spacing:1px;}
+
+/* MODE TOGGLE */
+.mode-toggle{display:flex;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:5px;margin-bottom:20px;gap:4px;}
+.mode-btn{flex:1;background:transparent;border:none;border-radius:8px;color:var(--muted2);font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;padding:12px;cursor:pointer;transition:all 0.2s;}
+.mode-btn.active{background:var(--purple);color:#fff;box-shadow:0 4px 16px rgba(123,47,190,0.35);}
+
+/* SECTION */
+.section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px;}
+.section-label{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.section-label .dot{width:16px;height:16px;background:var(--purple);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;}
+
+/* PASTE ZONE */
+.paste-zone{width:100%;background:var(--deep);border:2px dashed var(--border2);border-radius:10px;padding:24px;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:90px;position:relative;}
+.paste-zone:hover,.paste-zone.drag{border-color:var(--purple);background:var(--purple3);}
+.paste-zone p{font-size:13px;color:var(--muted2);text-align:center;}
+.paste-zone .hint{font-size:11px;color:var(--muted);}
+.paste-zone img{max-width:100%;max-height:220px;border-radius:8px;object-fit:contain;}
+.paste-zone .remove-img{position:absolute;top:8px;right:8px;background:rgba(231,76,60,0.85);border:none;border-radius:6px;color:#fff;font-size:11px;padding:4px 10px;cursor:pointer;}
+
+/* TEXTAREA */
+.txt{width:100%;background:var(--deep);border:1px solid var(--border2);border-radius:10px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.65;padding:14px;resize:vertical;min-height:90px;outline:none;transition:border-color 0.2s;}
+.txt:focus{border-color:var(--purple);}
+.txt::placeholder{color:var(--muted);}
+
+/* CATEGORIES */
+.cat-grid{display:flex;gap:8px;flex-wrap:wrap;}
+.cat-btn{background:var(--deep);border:1px solid var(--border2);border-radius:8px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:10px 18px;cursor:pointer;transition:all 0.2s;}
+.cat-btn[data-cat="onepiece"].active{background:rgba(232,197,71,0.15);border-color:#E8C547;color:#E8C547;}
+.cat-btn[data-cat="pokemon"].active{background:rgba(59,130,246,0.15);border-color:#3B82F6;color:#3B82F6;}
+.cat-btn[data-cat="brand"].active{background:var(--purple3);border-color:var(--purple2);color:var(--purple2);}
+.cat-btn[data-cat="general"].active{background:rgba(46,204,113,0.12);border-color:#2ECC71;color:#2ECC71;}
+
+/* SITUATIONS */
+.sit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;}
+.sit-btn{background:var(--deep);border:1px solid var(--border2);border-radius:8px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:12px;padding:10px 12px;cursor:pointer;transition:all 0.2s;text-align:left;}
+.sit-btn:hover{border-color:var(--purple);color:var(--white);}
+.sit-btn.active{background:var(--purple3);border-color:var(--purple);color:var(--white);}
+.sit-wrap{display:none;}
+.sit-wrap.show{display:block;}
+
+/* TONE */
+.tone-row{display:flex;gap:8px;flex-wrap:wrap;}
+.tone-btn{background:var(--deep);border:1px solid var(--border2);border-radius:20px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:8px 16px;cursor:pointer;transition:all 0.2s;}
+.tone-btn.active{background:var(--purple);border-color:var(--purple);color:#fff;}
+
+/* GENERATE */
+.gen-btn{width:100%;background:var(--purple);border:none;border-radius:12px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;padding:17px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:4px;}
+.gen-btn:hover:not(:disabled){background:var(--purple2);transform:translateY(-1px);box-shadow:0 8px 28px rgba(123,47,190,0.4);}
+.gen-btn:disabled{opacity:0.45;cursor:not-allowed;transform:none;}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.75s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* SEARCH STATUS */
+.search-status{font-size:11px;color:var(--gold);margin-top:8px;min-height:16px;display:flex;align-items:center;gap:6px;}
+.search-dot{width:6px;height:6px;background:var(--gold);border-radius:50%;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+/* RESULTS */
+.results-wrap{margin-top:20px;}
+.results-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--gold);margin-bottom:6px;}
+.loop-counter{font-size:11px;color:var(--muted2);margin-bottom:14px;}
+.loop-counter span{color:var(--purple2);font-weight:600;}
+
+.reply-option{background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:18px;margin-bottom:12px;cursor:pointer;transition:all 0.2s;position:relative;}
+.reply-option:hover{border-color:rgba(123,47,190,0.5);}
+.reply-option.selected{border-color:var(--purple);background:var(--purple3);}
+.opt-label{font-size:10px;font-weight:600;letter-spacing:2px;color:var(--purple2);text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.opt-text{font-size:14px;line-height:1.65;white-space:pre-wrap;}
+.opt-chars{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted2);}
+.opt-chars.over{color:var(--danger);}
+
+/* EDITOR */
+.editor-wrap{background:var(--card);border:1px solid var(--purple);border-radius:14px;padding:24px;margin-top:20px;}
+.editor-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:var(--purple2);margin-bottom:10px;}
+.selected-display{background:var(--deep);border:1px solid var(--border2);border-radius:10px;padding:14px;font-size:14px;line-height:1.65;margin-bottom:16px;white-space:pre-wrap;}
+.editor-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+.copy-btn{background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:12px;padding:9px 16px;cursor:pointer;transition:all 0.2s;}
+.copy-btn:hover{border-color:var(--purple);color:var(--white);}
+.copy-btn.copied{border-color:var(--success);color:var(--success);}
+.done-btn{background:var(--success);border:none;border-radius:8px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;padding:9px 20px;cursor:pointer;margin-left:auto;}
+
+.refine-section{border-top:1px solid var(--border);padding-top:16px;}
+.refine-label{font-size:11px;color:var(--muted2);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;}
+.refine-row{display:flex;gap:10px;}
+.refine-input{flex:1;background:var(--deep);border:1px solid var(--border2);border-radius:8px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 14px;outline:none;transition:border-color 0.2s;}
+.refine-input:focus{border-color:var(--purple);}
+.refine-input::placeholder{color:var(--muted);}
+.refine-btn{background:var(--purple);border:none;border-radius:8px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:10px 18px;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;}
+.refine-btn:disabled{opacity:0.45;cursor:not-allowed;}
+
+/* LOG PANEL */
+.log-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-top:20px;}
+.log-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.log-entry{background:var(--deep);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:8px;font-size:12px;}
+.log-entry-header{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px;color:var(--muted2);}
+.log-entry-header span{background:var(--border2);padding:2px 8px;border-radius:4px;}
+.log-entry-header .loops-badge{background:rgba(123,47,190,0.3);color:var(--purple2);}
+.log-tweet{color:var(--white);line-height:1.5;white-space:pre-wrap;}
+.log-empty{color:var(--muted);font-size:13px;text-align:center;padding:20px;}
+.download-log{background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 14px;cursor:pointer;transition:all 0.2s;}
+.download-log:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ERROR */
+.error-box{background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:10px;color:var(--danger);font-size:13px;padding:14px 18px;margin-top:12px;display:none;}
+.error-box.show{display:block;}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="gate-logo">🎴</div>
+    <div class="gate-title">GACHA TWEET STUDIO</div>
+    <div class="gate-sub">Team access only</div>
+    <div class="gate-member">
+      <select id="memberSelect">
+        <option value="">— Select your name —</option>
+        <option value="DenX">DenX</option>
+        <option value="Blair">Blair</option>
+        <option value="Sal">Sal</option>
+        <option value="Tania">Tania</option>
+      </select>
+    </div>
+    <input type="password" class="gate-input" id="gateInput" placeholder="Enter team password" onkeydown="if(event.key==='Enter')checkPass()" />
+    <button class="gate-btn" onclick="checkPass()">ENTER</button>
+    <div class="gate-error" id="gateError"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="app">
+  <div class="header">
+    <div class="logo">🎴</div>
+    <div class="header-text">
+      <h1>GACHA TWEET STUDIO</h1>
+      <p>AI-powered content in your brand voice</p>
+    </div>
+    <div class="user-badge" id="userBadge">🎴 Team</div>
+  </div>
+
+  <!-- MODE -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="modeReply" onclick="setMode('reply')">💬 REPLY</button>
+    <button class="mode-btn" id="modePost" onclick="setMode('post')">✏️ POST</button>
+  </div>
+
+  <!-- REPLY MODE -->
+  <div id="replyMode">
+    <div class="section">
+      <div class="section-label"><span class="dot">🐦</span> Tweet You Are Replying To</div>
+      <textarea class="txt" id="replyText" placeholder="Paste the tweet text here..." style="margin-bottom:12px;"></textarea>
+      <div class="section-label" style="margin-bottom:8px;"><span class="dot">🖼</span> Screenshot — Ctrl+V to paste or click to upload</div>
+      <div class="paste-zone" id="replyZone" onclick="document.getElementById('replyFile').click()">
+        <p>📋 Ctrl+V to paste screenshot directly</p>
+        <p class="hint">or click to browse</p>
+      </div>
+      <input type="file" id="replyFile" accept="image/*" style="display:none" onchange="handleFile(this,'reply')"/>
+    </div>
+  </div>
+
+  <!-- POST MODE -->
+  <div id="postMode" style="display:none;">
+    <div class="section">
+      <div class="section-label"><span class="dot">✏️</span> Describe the Post You Want to Make</div>
+      <textarea class="txt" id="postDesc" placeholder="e.g. Post about the Zoro Manga Alt Art PSA 10 in our Grand Pack — show lore knowledge and create FOMO, closing soon..." style="min-height:100px;margin-bottom:12px;"></textarea>
+      <div class="section-label" style="margin-bottom:8px;"><span class="dot">🖼</span> Card Image — Ctrl+V to paste or click to upload</div>
+      <div class="paste-zone" id="postZone" onclick="document.getElementById('postFile').click()">
+        <p>📋 Ctrl+V to paste card screenshot</p>
+        <p class="hint">or click to browse</p>
+      </div>
+      <input type="file" id="postFile" accept="image/*" style="display:none" onchange="handleFile(this,'post')"/>
+    </div>
+  </div>
+
+  <!-- CATEGORY -->
+  <div class="section">
+    <div class="section-label"><span class="dot">📌</span> Category</div>
+    <div class="cat-grid">
+      <button class="cat-btn" data-cat="onepiece" onclick="selectCat(this)">🏴‍☠️ One Piece</button>
+      <button class="cat-btn" data-cat="pokemon" onclick="selectCat(this)">⚡ Pokémon</button>
+      <button class="cat-btn" data-cat="brand" onclick="selectCat(this)">🎴 Brand / Gacha</button>
+      <button class="cat-btn" data-cat="general" onclick="selectCat(this)">🌐 General</button>
+    </div>
+  </div>
+
+  <!-- SITUATION -->
+  <div class="section sit-wrap" id="sitWrap">
+    <div class="section-label"><span class="dot">🎯</span> Situation Type</div>
+    <div class="sit-grid" id="sitGrid"></div>
+  </div>
+
+  <!-- TONE -->
+  <div class="section">
+    <div class="section-label"><span class="dot">🎭</span> Tone</div>
+    <div class="tone-row">
+      <button class="tone-btn" data-tone="hype" onclick="selectTone(this)">🔥 Hype</button>
+      <button class="tone-btn active" data-tone="cool" onclick="selectTone(this)">😎 Cool & Confident</button>
+      <button class="tone-btn" data-tone="lore" onclick="selectTone(this)">📖 Lore Knowledge</button>
+      <button class="tone-btn" data-tone="funny" onclick="selectTone(this)">💀 Funny</button>
+      <button class="tone-btn" data-tone="short" onclick="selectTone(this)">⚡ Short & Punchy</button>
+    </div>
+  </div>
+
+  <!-- GENERATE -->
+  <button class="gen-btn" id="genBtn" onclick="generate()">
+    <span id="genLabel">GENERATE</span>
+    <span id="genSpinner" style="display:none" class="spinner"></span>
+  </button>
+  <div class="search-status" id="searchStatus"></div>
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- RESULTS -->
+  <div id="resultsWrap" style="display:none;">
+    <div class="results-wrap">
+      <div class="results-title">CHOOSE AN OPTION</div>
+      <div class="loop-counter">Generation round <span id="loopNum">1</span> — pick the closest then refine below</div>
+      <div id="optionsContainer"></div>
+    </div>
+    <div class="editor-wrap" id="editorWrap" style="display:none;">
+      <div class="editor-title">SELECTED TWEET — COPY WHEN READY</div>
+      <div class="selected-display" id="selectedDisplay"></div>
+      <div class="editor-actions">
+        <button class="copy-btn" id="copyBtn" onclick="copySelected()">📋 Copy Tweet</button>
+        <button class="done-btn" onclick="finishSession()">✅ DONE — Log & Start Over</button>
+      </div>
+      <div class="refine-section">
+        <div class="refine-label">Not quite right? Tell the AI what to change</div>
+        <div class="refine-row">
+          <input type="text" class="refine-input" id="refineInput" placeholder='e.g. "make it shorter" / "add more Nami lore" / "less salesy"' onkeydown="if(event.key==='Enter')refine()"/>
+          <button class="refine-btn" id="refineBtn" onclick="refine()">
+            <span id="refineLabel">Regenerate</span>
+            <span id="refineSpinner" style="display:none" class="spinner"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SESSION LOG -->
+  <div class="log-panel" id="logPanel" style="display:none;">
+    <div class="log-title">
+      SESSION LOG
+      <button class="download-log" onclick="downloadLog()">⬇ Download</button>
+    </div>
+    <div id="logEntries"><div class="log-empty">No sessions logged yet this session.</div></div>
+  </div>
+
+</div>
+
+<script>
+// ── CONSTANTS ──
+const PASS = 'Gengar69';
+const ANTHROPIC_KEY = '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';
+const SUPABASE_URL = 'https://tfkzhtnarcdljfwoytii.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_e2ps9As8QjJKfi1U7Es7hQ__fgyL25F';
+
+// ── TWEET HISTORY ──
+const POSTS_DATA = `=== @gacha_game_ — Original Post (Part 1 of 2) ===
+Tweets in this file: 100
+
+--- ORIGINAL POST 1 | 2026-03-11 ---
+Join Discord to check the leaderboard and tickets:
+https://t.co/Sa5KEIHmct
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 47
+
+--- ORIGINAL POST 2 | 2026-03-11 ---
+Last call on our One Piece Grand Packs 👇
+
+This is your last chance to grab raffle tickets and pull Championship promos, serialized cards, and manga rares before they close tomorrow.
+
+What card are you chasing?  🤔 https://t.co/JH8EGe54nE
+Likes: 6  Retweets: 1  Replies: 1  Impressions: 225
+
+--- ORIGINAL POST 3 | 2026-03-11 ---
+Zoro would get lost looking for the Grand Pack
+
+But you don't have to
+
+Pull One Piece Grand Pack on Gacha. Last 2 days left! https://t.co/EI2FBNaCIV
+Likes: 17  Retweets: 1  Replies: 0  Impressions: 306
+
+--- ORIGINAL POST 4 | 2026-03-11 ---
+MEGA GIVEAWAY W/ LEWSIPHER 🎁 https://t.co/vERfOTxN4r
+Likes: 61  Retweets: 46  Replies: 11  Impressions: 809
+
+--- ORIGINAL POST 5 | 2026-03-11 ---
+WE'RE SO BACK W/ STREAMS 🔥 
+
+Catch us at noon today and rip some grails 
+
+We also got @Lewsiphur as our special guest! https://t.co/Qs4dlQXB8T
+Likes: 18  Retweets: 2  Replies: 5  Impressions: 476
+
+--- ORIGINAL POST 6 | 2026-03-11 ---
+The Straw Hats said goodbye at Sabaody and came back stronger
+
+The Grand Pack says goodbye Thursday and it's not coming back
+
+Don't be the one who missed this 🏴‍☠️ https://t.co/GuWTmilW81
+Likes: 15  Retweets: 1  Replies: 4  Impressions: 405
+
+--- ORIGINAL POST 7 | 2026-03-10 ---
+me when someone ask me how many Luffys I actually  have in my collection https://t.co/4h70J9gxND
+Likes: 23  Retweets: 0  Replies: 4  Impressions: 663
+
+--- ORIGINAL POST 8 | 2026-03-10 ---
+Join our discord to enter the raffle!
+
+https://t.co/Sa5KEIHmct
+Likes: 2  Retweets: 0  Replies: 0  Impressions: 273
+
+--- ORIGINAL POST 9 | 2026-03-10 ---
+Don't miss your chance to pull this Luffy 1st Anniversary Special in our limited Grand Packs.
+
+You have till 3/12 for a chance to pull this grail!
+
+This one won't stay digital for long. 🏴‍☠️ https://t.co/InIxs95s7R
+Likes: 75  Retweets: 49  Replies: 30  Impressions: 1924
+
+--- ORIGINAL POST 10 | 2026-03-10 ---
+Beginner's luck is scientifically unproven and emotionally devastating.
+
+Your friend opens their first pack ever.
+
+Hits the chase card.
+
+You've opened 300 packs and your best pull is a reverse holo Bidoof.
+
+The universe has jokes 💀
+Likes: 19  Retweets: 1  Replies: 4  Impressions: 724
+
+--- ORIGINAL POST 11 | 2026-03-10 ---
+JUST PULLED A ~$1,200 CARD🤯 
+
+Here's what makes this card solid: 
+
+· PSA 10 — flawless grade, extremely tight supply
+· 3rd Anniversary Gold — limited milestone release, not a standard print. 
+· This person loves Gacha 
+ 
+@SpectoRz22 👀 https://t.co/NkQ2Rd7QUn
+Likes: 61  Retweets: 30  Replies: 29  Impressions: 2494
+
+--- ORIGINAL POST 12 | 2026-03-09 ---
+Join us on discord now!
+
+https://t.co/Sa5KEIHmct
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 145
+
+--- ORIGINAL POST 13 | 2026-03-09 ---
+The OP Grand Pack is closing out 🏴‍☠️
+
+To send it off right, we're hosting a raffle for 7 FREE Gacha Pull Packs.
+
+Already bought one? You're in.
+
+All Grand Packs pulled from 3/5 – 3/12 are automatically entered to win!
+
+Join Discord to check your tickets and see if you're a winner https://t.co/fjMfNoioUY
+Likes: 22  Retweets: 2  Replies: 3  Impressions: 833
+
+--- ORIGINAL POST 14 | 2026-03-09 ---
+SNEAK PEAK MONDAYS! 
+
+First Partner Illustration Collection 
+
+Series 1 promo cards that will be released on March 20th based on speculation
+
+You buying? https://t.co/4SkHdUqIBb
+Likes: 28  Retweets: 0  Replies: 14  Impressions: 643
+
+--- ORIGINAL POST 15 | 2026-03-09 ---
+This man cut nothing for 2 years to cut everything when it mattered 💀
+
+Manga rare version goes just as hard
+
+Pull now in the Grand Pack! https://t.co/C2Vr41WVYv
+Likes: 17  Retweets: 0  Replies: 4  Impressions: 700
+
+--- ORIGINAL POST 16 | 2026-03-09 ---
+She turned every Marine on Amazon Lily to stone and somehow the manga rare version of this card is even harder to look away from 🐍
+
+In the One Piece Premium pack now
+
+Tag someone who needs to see this 👇 https://t.co/3ZsnTc8UY3
+Likes: 26  Retweets: 0  Replies: 6  Impressions: 700
+
+--- ORIGINAL POST 17 | 2026-03-09 ---
+Someone just pulled one of the most premium prints from our new Grand Pack! 
+
+Out of the 10 manga cards in the PRB01 set, Nami is the only R, while every other chase card is SR or SEC.
+
+Nami doesn't need a higher rarity. The Arlong arc did that for her.
+
+Does rarity even matter https://t.co/KaKGdgO4Ea
+Likes: 31  Retweets: 0  Replies: 10  Impressions: 1126
+
+--- ORIGINAL POST 18 | 2026-03-08 ---
+Your mom doesn't know what a grand pack is but she just bought you one on Gacha with her credit card in 45 seconds flat 💳
+
+The future of TCG is your parents accidentally becoming degens
+
+Happy ripping to all the moms who just wanted to buy their kid a birthday present and ended https://t.co/gTTVgBMfBd
+Likes: 12  Retweets: 0  Replies: 0  Impressions: 991
+
+--- ORIGINAL POST 19 | 2026-03-08 ---
+Every Pokemon collector has that one card they'll never sell no matter what
+
+The one that lives in the top loader, inside a sleeve, inside another sleeve, inside a fireproof safe in a location you told nobody about
+
+What's yours? 👀
+Likes: 21  Retweets: 0  Replies: 4  Impressions: 912
+
+--- ORIGINAL POST 20 | 2026-03-07 ---
+If you could have an elder brother, who would you want?
+
+Ps: You can have both
+
+Pull One Piece Grand Pack on Gacha!
+Likes: 14  Retweets: 2  Replies: 6  Impressions: 473
+
+--- ORIGINAL POST 21 | 2026-03-07 ---
+her: put your phone away we're at dinner
+
+me: no
+
+her: why
+
+me: *shows screen* https://t.co/BeqPhTeNCd
+Likes: 21  Retweets: 0  Replies: 2  Impressions: 1057
+
+--- ORIGINAL POST 22 | 2026-03-07 ---
+One Piece OP-15 released this week
+
+We got a case before most stores even stocked it 📦
+
+What should we do with it? https://t.co/SXA8JSEHNn
+Likes: 35  Retweets: 2  Replies: 13  Impressions: 1169
+
+--- ORIGINAL POST 23 | 2026-03-06 ---
+Rip the exclusive pack on Gacha
+
+https://t.co/HwwT7FGCVs
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 144
+
+--- ORIGINAL POST 24 | 2026-03-06 ---
+Someone just pulled a $922 Chopper manga alt from the $500 Grand Pack
+
+The Grand Pack is paying out. Rip one before the vault runs dry 🏴‍☠️ https://t.co/SiaO5seTKf
+Likes: 23  Retweets: 2  Replies: 3  Impressions: 816
+
+--- ORIGINAL POST 25 | 2026-03-06 ---
+MANGA PACKS ARE LIVE 🎉 https://t.co/kXWglvYp9c
+Likes: 86  Retweets: 63  Replies: 37  Impressions: 24149
+
+--- ORIGINAL POST 26 | 2026-03-06 ---
+$33 per card + months of waiting just to get a slab back 💀
+
+every card on Gacha is already PSA-graded
+
+rip a pack, pull a slab, redeem it. skip the line entirely https://t.co/aS4HeTQzkF
+Likes: 28  Retweets: 0  Replies: 7  Impressions: 2141
+
+--- ORIGINAL POST 27 | 2026-03-06 ---
+The $500 pack is for people who walk into a restaurant and don't look at the menu prices
+
+You know who you are 👀
+
+Limited drop on Gacha. Cards so rare your collection needs a bodyguard 🔥 https://t.co/RbscQwRaie
+Likes: 30  Retweets: 7  Replies: 3  Impressions: 782
+
+--- ORIGINAL POST 28 | 2026-03-06 ---
+NEW MANGA PACKS ARE LIVE!
+
+Come join us for our livestream today to rip some One Piece holy grails 🎉 https://t.co/j7CW013T6j
+Likes: 39  Retweets: 12  Replies: 10  Impressions: 1794
+
+--- ORIGINAL POST 29 | 2026-03-06 ---
+Imagine explaining to your grandkids that you had the chance to rip a Gacha One Piece Premium pack and you didn't do it 💀
+
+"But grandpa why didn't you just rip it"
+
+"I was scared"
+
+Limited drop on Gacha. Don't be grandpa https://t.co/UtxZGCQWWS
+Likes: 33  Retweets: 0  Replies: 4  Impressions: 889
+
+--- ORIGINAL POST 30 | 2026-03-05 ---
+Things that cost $500:
+
+- a PS5
+- round trip flight to Miami
+- 2 months of groceries if you're disciplined
+- one pack on Gacha that could change your entire collection forever
+
+Choose wisely 👀
+Likes: 20  Retweets: 0  Replies: 5  Impressions: 904
+
+--- ORIGINAL POST 31 | 2026-03-05 ---
+MANGA PACKS ARE LIVE 🎉 https://t.co/qpjqDrcwkp
+Likes: 75  Retweets: 56  Replies: 9  Impressions: 1134
+
+--- ORIGINAL POST 32 | 2026-03-05 ---
+Some of you have more money in slabs than savings and it shows
+
+Tag the one who can't be saved 😅 https://t.co/JwoGSo7t3H
+Likes: 26  Retweets: 0  Replies: 6  Impressions: 1071
+
+--- ORIGINAL POST 33 | 2026-03-05 ---
+CALLING ALL COLLECTORS 🔥
+
+Manga Packs are officially live so come join @kryptobaby777 https://t.co/5wpRzbJjY0
+Likes: 27  Retweets: 4  Replies: 4  Impressions: 693
+
+--- ORIGINAL POST 34 | 2026-03-05 ---
+MANGA PACKS ARE LIVE 🎉 https://t.co/JRWxo4S9wd
+Likes: 105  Retweets: 78  Replies: 70  Impressions: 2607
+
+--- ORIGINAL POST 35 | 2026-03-05 ---
+We loaded the vault and honestly some of these pulls are disrespectful
+
+$500 One Piece Manga Pack is live
+
+Championship promos, serialized cards, manga rares from damn near every Straw Hat
+
+Limited inventory. Rip on Gacha 👇 https://t.co/EIYfUmXcCX
+Likes: 82  Retweets: 33  Replies: 12  Impressions: 3594
+
+--- ORIGINAL POST 36 | 2026-03-05 ---
+MANGA PACKS ARE OFFICIALLY LIVE!!!!!
+
+Come join the stream to rip a $500 pack &amp; join the giveaway 🎁
+
+We also got @Deviled_meggs_ joining us.
+
+See you soon collectors https://t.co/EI8fF6XkNd
+Likes: 54  Retweets: 17  Replies: 8  Impressions: 1055
+
+--- ORIGINAL POST 37 | 2026-03-04 ---
+We added some things to the vault that we probably shouldn't talk about yet 👀
+
+All we'll say is if you're a One Piece collector and you've been waiting for specific heat, this week is your week https://t.co/O4g7SZPxoV
+Likes: 30  Retweets: 1  Replies: 6  Impressions: 1072
+
+--- ORIGINAL POST 38 | 2026-03-04 ---
+NEW ONE PIECE PACKS COMING SOON!!!!!! 🥵 https://t.co/6rZwJOwhKu
+Likes: 79  Retweets: 52  Replies: 8  Impressions: 926
+
+--- ORIGINAL POST 39 | 2026-03-04 ---
+We added something to the vault that probably shouldn't exist
+
+limited quantity. limited time.
+
+you'll find out Thursday 👀 https://t.co/cRRl14vIT2
+Likes: 36  Retweets: 7  Replies: 6  Impressions: 1057
+
+--- ORIGINAL POST 40 | 2026-03-04 ---
+BREAKING: 
+
+· New packs coming tomorrow 
+· One Piece is real 
+· Tag a friend to hit a God pack 
+
+🏴‍☠️ https://t.co/KinWnygqiZ
+Likes: 112  Retweets: 75  Replies: 41  Impressions: 2038
+
+--- ORIGINAL POST 41 | 2026-03-04 ---
+Did someone say... NEW? 👀
+
+It's officially T-minus 1 day till we unlock the craziest OP pack
+
+I think it's safe to say we can run a mega giveaway today on stream, don't you guys think? https://t.co/Yhsu4dVm8G
+Likes: 52  Retweets: 16  Replies: 8  Impressions: 1175
+
+--- ORIGINAL POST 42 | 2026-03-04 ---
+If Luffy had a credit card he'd still choose to punch his way through checkout
+
+But for the rest of us, you can now buy packs on Gacha with a card and rip them in under 60 seconds 💳
+
+No wallet setup, no crypto, just vibes and cards https://t.co/b0OGqJjNRH
+Likes: 22  Retweets: 3  Replies: 2  Impressions: 935
+
+--- ORIGINAL POST 43 | 2026-03-03 ---
+Put your grandma on the hobby
+
+live on gacha. https://t.co/BCMHWoqLNf
+Likes: 29  Retweets: 3  Replies: 2  Impressions: 843
+
+--- ORIGINAL POST 44 | 2026-03-03 ---
+We're creating a special list for Thursday 👀   
+
+Tag everyone who deserves to be here and win a free pack https://t.co/TAHUuVbJk3
+Likes: 70  Retweets: 20  Replies: 47  Impressions: 1654
+
+--- ORIGINAL POST 45 | 2026-03-03 ---
+THURSDAY THURSDAY THURSDAY 👀
+
+You thought last week was big, wait till you see what we got next https://t.co/Us75fgPf3B
+Likes: 57  Retweets: 33  Replies: 33  Impressions: 1423
+
+--- ORIGINAL POST 46 | 2026-03-03 ---
+Sanji would open One Piece packs just to find every Nami and Robin card in the set and then act like he doesn't care about the meta 😭
+
+Meanwhile Zoro would accidentally pull a god pack because he got lost trying to find the exit button
+
+The Straw Hats on Gacha would be pure https://t.co/ljo40joiO7
+Likes: 31  Retweets: 3  Replies: 5  Impressions: 994
+
+--- ORIGINAL POST 47 | 2026-03-02 ---
+Someone's pulling a PSA 10 Shanks today
+
+Could be you
+Could be the person who reads this and scrolls past
+Could be nobody
+
+Gacha doesn't play favorites
+
+Four new alternate arts just dropped into the vault. Boa, Shanks, Luffy, Ace - all PSA graded, all ready to ship if you hit. https://t.co/QVJRoKnUfL
+Likes: 25  Retweets: 3  Replies: 5  Impressions: 1246
+
+--- ORIGINAL POST 48 | 2026-03-01 ---
+Three carriers of the will of D hit the vault
+
+All luffy, all graded, all staying
+
+Pull now at Gacha! https://t.co/u1Z0nCVnux
+Likes: 29  Retweets: 3  Replies: 4  Impressions: 1152
+
+--- ORIGINAL POST 49 | 2026-03-01 ---
+Two ways to get graded Pokémon cards online:
+
+1. Browse a marketplace: Find one you like, pay market price, hope the centering looks as good in person as it did in the listing. Wait 2 weeks for shipping.
+
+2. Rip a pack on Gacha: Every card is already PSA graded before you pull
+Likes: 20  Retweets: 2  Replies: 2  Impressions: 1899
+
+--- ORIGINAL POST 50 | 2026-02-28 ---
+There's always someone starting One Piece for the first time and having no idea what they're getting into
+
+1000+ episodes of getting emotionally wrecked by fictional pirates
+
+But hey at least now you can collect the cards while you watch
+
+one of us 🏴‍☠️ https://t.co/3iehLNkLNy
+Likes: 28  Retweets: 2  Replies: 5  Impressions: 1321
+
+--- ORIGINAL POST 51 | 2026-02-28 ---
+We're refocusing @gacha_game_ on consumers, cards &amp; experience.📅 What's changing:
+
+Feb 28 — One Piece PSA Graded Grails
+Feb 28 — Pokemon PSA Graded Grails
+Feb 28 — Credit Card integration
+
+Gacha remains central. Collectors stop worrying about crypto and use credit card to pull. https://t.co/4yo4uIKl2M
+Likes: 37  Retweets: 4  Replies: 5  Impressions: 2659
+
+--- ORIGINAL POST 52 | 2026-02-27 ---
+Happy 30th Anniversary
+
+From Game Boy screens to global phenomenon - 30 years of Pokémon changed everything.
+
+Today we celebrate with something special.
+
+Tell us your first Pokémon memory to stand a chance at a free pack👇 https://t.co/MU6NxUFiji
+Likes: 127  Retweets: 17  Replies: 54  Impressions: 220419
+
+--- ORIGINAL POST 53 | 2026-02-27 ---
+JOIN DISCORD: 
+https://t.co/v46DP0VMA8
+Likes: 3  Retweets: 0  Replies: 1  Impressions: 361
+
+--- ORIGINAL POST 54 | 2026-02-27 ---
+GIVEAWAY + HAPPY 30TH ANNIVERSARY 🎁 https://t.co/lB8ZAnI1TZ
+Likes: 88  Retweets: 65  Replies: 13  Impressions: 1292
+
+--- ORIGINAL POST 55 | 2026-02-27 ---
+https://t.co/gCFrP0oKWM
+Likes: 2  Retweets: 0  Replies: 0  Impressions: 250
+
+--- ORIGINAL POST 56 | 2026-02-27 ---
+WE AREN'T FINISHED YET!!!!!!
+
+Back w/ another livestream in less than one hour
+
+· Join @RaposaCoffeeCo today
+· Let's rip some EXCLUSIVE Pikachu packs
+· Lastly, enter the giveaway live
+
+PLAY NOW 👇 https://t.co/ILfJnz4F8k
+Likes: 34  Retweets: 12  Replies: 8  Impressions: 1168
+
+--- ORIGINAL POST 57 | 2026-02-27 ---
+30 years since Pikachu first sparked our imagination ⚡
+
+Three decades of adventure, friendship, and unforgettable moments.
+
+Here's to the next 30. https://t.co/yMaDIq1EEg
+Likes: 47  Retweets: 9  Replies: 9  Impressions: 245376
+
+--- ORIGINAL POST 58 | 2026-02-27 ---
+PULL NOW: 
+
+https://t.co/eLaJSi5IuZ
+Likes: 8  Retweets: 6  Replies: 0  Impressions: 297
+
+--- ORIGINAL POST 59 | 2026-02-27 ---
+GIVEAWAY + HAPPY 30TH ANNIVERSARY 🎁 https://t.co/0u55HmbptA
+Likes: 80  Retweets: 39  Replies: 32  Impressions: 20209
+
+--- ORIGINAL POST 60 | 2026-02-27 ---
+HAPPY 30TH ANNIVERSARY DAY! 🎉
+
+Pokemon launched exactly 30 years ago &amp; what a time to be alive to rip packs w/ your friends
+
+But...not you can do it digitally w/ Gacha!
+
+Join us to celebrate https://t.co/Te7EKuIrnF
+Likes: 38  Retweets: 6  Replies: 5  Impressions: 1204
+
+--- ORIGINAL POST 61 | 2026-02-27 ---
+PULL NOW AT GACHA!
+
+https://t.co/HwwT7FGCVs
+Likes: 4  Retweets: 0  Replies: 0  Impressions: 410
+
+--- ORIGINAL POST 62 | 2026-02-27 ---
+Pokémon turns 30 today
+
+We created one legendary anniversary pack to celebrate.
+
+Gacha's limited-time drop is now LIVE:
+
+⚡ Exclusive Pikachu editions (V-Union, Birthday, Celebration)
+⚡ PSA-graded cards
+⚡ 110% expected value
+
+Rip it. Hold it. Ship it home.
+
+Show us what you hit https://t.co/H1Qfc6tRhp
+Likes: 142  Retweets: 51  Replies: 60  Impressions: 11850
+
+--- ORIGINAL POST 63 | 2026-02-26 ---
+T-MINUS 1 DAY 🎁  
+
+Exclusive Pikachu packs coming in heavy tomorrow 
+
+Hit some holy grails and notis on https://t.co/pQoWFtNX3q
+Likes: 104  Retweets: 51  Replies: 29  Impressions: 278223
+
+--- ORIGINAL POST 64 | 2026-02-26 ---
+MEGA GIVEAWAY + 1 DAY TILL POKEMON DAY 🎁 
+https://t.co/Ynqn5cuJUJ
+Likes: 53  Retweets: 26  Replies: 14  Impressions: 1208
+
+--- ORIGINAL POST 65 | 2026-02-26 ---
+MEGA GIVEAWAY + 1 DAY TILL POKEMON DAY 🎁 https://t.co/ZfpXjNSUOo
+Likes: 69  Retweets: 43  Replies: 26  Impressions: 1194
+
+--- ORIGINAL POST 66 | 2026-02-26 ---
+BREAKING:  Don't fade our exclusive Pikachu packs
+
+Notis on for tomorrows...some are loaded w/ surprises https://t.co/zczTHk2eaX
+Likes: 81  Retweets: 8  Replies: 16  Impressions: 309949
+
+--- ORIGINAL POST 67 | 2026-02-26 ---
+Every Pokémon collector has the same routine
+
+- Pull something fire
+- Stare at it for 30 seconds
+- Show your friend who doesn't care
+- Put it in the binder
+- Check the price
+- Check the price again
+- Check the price one more time
+- Convince yourself you'll sell at 2x
+- Never sell
+Likes: 34  Retweets: 1  Replies: 5  Impressions: 1491
+
+--- ORIGINAL POST 68 | 2026-02-25 ---
+Every few weeks someone finds their entire childhood Pokémon `;
+const REPLIES_DATA = `=== @gacha_game_ — Reply (Part 1 of 3) ===
+Tweets in this file: 100
+
+--- REPLY 1 | 2026-03-11 ---
+@0xBaumer everyone loves Lisia &lt;3
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 6
+
+--- REPLY 2 | 2026-03-11 ---
+Join Discord to check the leaderboard and tickets:
+https://t.co/Sa5KEIHmct
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 47
+
+--- REPLY 3 | 2026-03-11 ---
+@Lanzema_sol ong gotta respect the routine
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 8
+
+--- REPLY 4 | 2026-03-11 ---
+@op_timistic1511 yooo my guy
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 6
+
+--- REPLY 5 | 2026-03-11 ---
+@exdev0 https://t.co/C86IDxijAk
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 6
+
+--- REPLY 6 | 2026-03-11 ---
+@MINHxDYNASTY looks like having a good life
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 39
+
+--- REPLY 7 | 2026-03-11 ---
+@Lemidrop lfgachaaa!!
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 22
+
+--- REPLY 8 | 2026-03-11 ---
+@ADavieslee https://t.co/ORTeBHziao
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 13
+
+--- REPLY 9 | 2026-03-11 ---
+@MINHxDYNASTY damn bro making it look easy
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 31
+
+--- REPLY 10 | 2026-03-11 ---
+@KDCOLLECTS whoaw grab one for me pls
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 206
+
+--- REPLY 11 | 2026-03-11 ---
+@DabKing86 don't fight the itch https://t.co/3xgDpb56d4
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 68
+
+--- REPLY 12 | 2026-03-11 ---
+@imastonefox happy you’re here man!
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 68
+
+--- REPLY 13 | 2026-03-11 ---
+@DabKing86 that lil dude is adorable
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 13
+
+--- REPLY 14 | 2026-03-11 ---
+@CicoNFT LET'S GOOO https://t.co/jyhbSMH25h
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 12
+
+--- REPLY 15 | 2026-03-11 ---
+@Gerel100x https://t.co/JcCHJfuDoW
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 7
+
+--- REPLY 16 | 2026-03-11 ---
+@nikooooze yessir big cook!!
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 14
+
+--- REPLY 17 | 2026-03-11 ---
+@JoeLee88795 brooo ikr!
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 8
+
+--- REPLY 18 | 2026-03-11 ---
+@Hey_its_Siri_0x yessir always cooking something fun here 🫡
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 12
+
+--- REPLY 19 | 2026-03-11 ---
+@DenyRagsToRich same hereee
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 9
+
+--- REPLY 20 | 2026-03-11 ---
+@char_lotteweb lfgacha!!
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 10
+
+--- REPLY 21 | 2026-03-11 ---
+@ZamaniSleek manifesting that for you https://t.co/Tn2vcgTi7l
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 6
+
+--- REPLY 22 | 2026-03-11 ---
+@Ayobamijr12 👀
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 15
+
+--- REPLY 23 | 2026-03-11 ---
+@MrShyGuy_01 yessirrr ultimate W pull
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 15
+
+--- REPLY 24 | 2026-03-11 ---
+@_Alex_Cipher 👀👀
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 10
+
+--- REPLY 25 | 2026-03-11 ---
+@Kurogod https://t.co/tYiK8gm4DP
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 19
+
+--- REPLY 26 | 2026-03-11 ---
+@Gnomonknows hell yeah let’s goooo!! https://t.co/1r6nP703Id
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 19
+
+--- REPLY 27 | 2026-03-11 ---
+@KodyKennedyKK gm
+
+these are so cool man 🔥
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 14
+
+--- REPLY 28 | 2026-03-11 ---
+@moonbreonbaby keep ripping kim you got this https://t.co/E7WM18CJJa
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 69
+
+--- REPLY 29 | 2026-03-11 ---
+@shib4understan1 omg congrats dude that card is gorgeous!!
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 12
+
+--- REPLY 30 | 2026-03-11 ---
+@SALAMANDER12_ find a job that you love
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 11
+
+--- REPLY 31 | 2026-03-11 ---
+@MINHxDYNASTY best feeling ever
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 28
+
+--- REPLY 32 | 2026-03-11 ---
+@MINHxDYNASTY minh just casually drops a grail
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 120
+
+--- REPLY 33 | 2026-03-11 ---
+@CoolGuyPodge yo that's such a clean card🔥
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 15
+
+--- REPLY 34 | 2026-03-11 ---
+@poke_emilys this setup is so adorable &lt;3
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 18
+
+--- REPLY 35 | 2026-03-11 ---
+@KDCOLLECTS omg congrats!
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 19
+
+--- REPLY 36 | 2026-03-11 ---
+@_m_a_d_i_z_o_n_ @BrandonCollect omg these are so cute
+Likes: 2  Retweets: 0  Replies: 0  Impressions: 52
+
+--- REPLY 37 | 2026-03-11 ---
+@aukeiitcg awww so adorableee
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 257
+
+--- REPLY 38 | 2026-03-11 ---
+@tmerv03 open ittt
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 76
+
+--- REPLY 39 | 2026-03-11 ---
+@moonbreonbaby @xzuyyu that’s amazing!!
+Likes: 2  Retweets: 0  Replies: 1  Impressions: 25
+
+--- REPLY 40 | 2026-03-10 ---
+@The_Makeup_Wolf omg these are so adorable!!
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 26
+
+--- REPLY 41 | 2026-03-10 ---
+@cesarg0519 the pain is real
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 33
+
+--- REPLY 42 | 2026-03-10 ---
+@Kurogod 🤣
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 15
+
+--- REPLY 43 | 2026-03-10 ---
+@Denx_Sol gaaaachaaaa
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 17
+
+--- REPLY 44 | 2026-03-10 ---
+@ashrobin keep killing it ash! 🔥
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 140
+
+--- REPLY 45 | 2026-03-10 ---
+@KodyKennedyKK absolute W 🔥
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 206
+
+--- REPLY 46 | 2026-03-10 ---
+@KDCOLLECTS not coney waiting for his invite in the back 😭
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 493
+
+--- REPLY 47 | 2026-03-10 ---
+Join our discord to enter the raffle!
+
+https://t.co/Sa5KEIHmct
+Likes: 2  Retweets: 0  Replies: 0  Impressions: 273
+
+--- REPLY 48 | 2026-03-10 ---
+@simpleeemi huge W emi!!
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 585
+
+--- REPLY 49 | 2026-03-10 ---
+@tanialemon_ that card is beautiful mama
+Likes: 2  Retweets: 0  Replies: 0  Impressions: 34
+
+--- REPLY 50 | 2026-03-10 ---
+@simpleeemi ngl that card looks sick!!
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 133
+
+--- REPLY 51 | 2026-03-10 ---
+@moonbreonbaby such a gorgeous card!
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 27
+
+--- REPLY 52 | 2026-03-10 ---
+@maya_jillian75 gm maya!
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 26
+
+--- REPLY 53 | 2026-03-10 ---
+@PZPTCG gm preston 
+
+that raikou clean af
+Likes: 2  Retweets: 0  Replies: 0  Impressions: 40
+
+--- REPLY 54 | 2026-03-10 ---
+@ItsaMeCooper @_Craig_ @Courtyard_io @Beezie hes right get on @gacha_game_ :D 
+
+send a dm to sal @_Craig_
+Likes: 2  Retweets: 0  Replies: 1  Impressions: 19
+
+--- REPLY 55 | 2026-03-10 ---
+@MINHxDYNASTY yes adapt or get left in the dust
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 29
+
+--- REPLY 56 | 2026-03-10 ---
+@Kit_GPT no wayyyyy
+Likes: 2  Retweets: 0  Replies: 0  Impressions: 70
+
+--- REPLY 57 | 2026-03-10 ---
+@Kit_GPT bro insane pull wtf congrats that's unreal luck!!
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 43
+
+--- REPLY 58 | 2026-03-10 ---
+@Denx_Sol we all know those are gonna get ripped https://t.co/Xck9MWTWTX
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 39
+
+--- REPLY 59 | 2026-03-10 ---
+@MINHxDYNASTY let's see itttt
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 37
+
+--- REPLY 60 | 2026-03-10 ---
+@SALAMANDER12_ let’s gooo!! pull some fire for us
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 20
+
+--- REPLY 61 | 2026-03-10 ---
+@kaif_41 @SpectoRz22 yuge af dude!
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 24
+
+--- REPLY 62 | 2026-03-10 ---
+@op_timistic1511 @SpectoRz22 insane W fr
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 21
+
+--- REPLY 63 | 2026-03-10 ---
+@DenyRagsToRich @SpectoRz22 banger
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 25
+
+--- REPLY 64 | 2026-03-10 ---
+@haynorff06 @SpectoRz22 it really is 🔥🔥
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 22
+
+--- REPLY 65 | 2026-03-10 ---
+@NFT_BrunoMP @SpectoRz22 yessir ty!!
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 29
+
+--- REPLY 66 | 2026-03-10 ---
+@JoeLee88795 @SpectoRz22 lfgachaaa! 🔥
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 23
+
+--- REPLY 67 | 2026-03-10 ---
+@cesarg0519 @SpectoRz22 insane FR!!
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 52
+
+--- REPLY 68 | 2026-03-10 ---
+@aukeiitcg literally the cutest setup ever!!
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 2265
+
+--- REPLY 69 | 2026-03-10 ---
+@KDCOLLECTS he's literally built different 😭
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 32
+
+--- REPLY 70 | 2026-03-10 ---
+@CoolGuyPodge i love that snorlax &lt;3
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 24
+
+--- REPLY 71 | 2026-03-10 ---
+@The_Makeup_Wolf those look fire
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 49
+
+--- REPLY 72 | 2026-03-10 ---
+@MINHxDYNASTY she's a keeper minh
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 47
+
+--- REPLY 73 | 2026-03-10 ---
+@MrShyGuy_01 @SpectoRz22 insane haha
+Likes: 2  Retweets: 0  Replies: 0  Impressions: 62
+
+--- REPLY 74 | 2026-03-10 ---
+@0xShadooow @SpectoRz22 more to come!
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 34
+
+--- REPLY 75 | 2026-03-10 ---
+@ZackD0x @SpectoRz22 for real!
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 46
+
+--- REPLY 76 | 2026-03-10 ---
+@tanialemon_ @SpectoRz22 woot woot!
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 62
+
+--- REPLY 77 | 2026-03-09 ---
+@KDCOLLECTS you gotta jump 53 times now
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 43
+
+--- REPLY 78 | 2026-03-09 ---
+@MINHxDYNASTY insane numbers man
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 35
+
+--- REPLY 79 | 2026-03-09 ---
+@MINHxDYNASTY red days build legends
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 23
+
+--- REPLY 80 | 2026-03-09 ---
+@rasmr_eth meanwhile inflation laughing in 10% https://t.co/XsmItA3YMR
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 148
+
+--- REPLY 81 | 2026-03-09 ---
+@CoolGuyPodge those are fireee!!
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 45
+
+--- REPLY 82 | 2026-03-09 ---
+@Nymrielle @parkyspokestop yay congrats!!
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 21
+
+--- REPLY 83 | 2026-03-09 ---
+@moonbreonbaby such a great card!!  that’s one of my chases 😁
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 58
+
+--- REPLY 84 | 2026-03-09 ---
+Join us on discord now!
+
+https://t.co/Sa5KEIHmct
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 145
+
+--- REPLY 85 | 2026-03-09 ---
+@SALAMANDER12_ this makes you look 1000% less guilty
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 30
+
+--- REPLY 86 | 2026-03-09 ---
+@Jakeronthia_ big yes!
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 17
+
+--- REPLY 87 | 2026-03-09 ---
+@cesarg0519 👀
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 16
+
+--- REPLY 88 | 2026-03-09 ---
+@imastonefox same, take my money now https://t.co/NfMD72hMXi
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 33
+
+--- REPLY 89 | 2026-03-09 ---
+@KylosWeb3 yk it’s a must 🫡
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 13
+
+--- REPLY 90 | 2026-03-09 ---
+@JelizaRoseQc can't wait either https://t.co/7pCfwN0AI1
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 14
+
+--- REPLY 91 | 2026-03-09 ---
+@CicoNFT https://t.co/X68IseTAnP
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 14
+
+--- REPLY 92 | 2026-03-09 ---
+@CoolGuyPodge https://t.co/Jn4qM5cHjF
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 41
+
+--- REPLY 93 | 2026-03-09 ---
+@Kurogod can’t even choose both goated 👌
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 8
+
+--- REPLY 94 | 2026-03-09 ---
+@Denx_Sol gm my guy
+
+those pulls are clean af 🔥
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 24
+
+--- REPLY 95 | 2026-03-09 ---
+@poke_emilys ngl such a creative way to show cards
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 147
+
+--- REPLY 96 | 2026-03-09 ---
+@Chilearmy123 builders forgot users hate complexity
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 30
+
+--- REPLY 97 | 2026-03-09 ---
+@MINHxDYNASTY lmao she didn't hold back https://t.co/UC1sHeERct
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 166
+
+--- REPLY 98 | 2026-03-09 ---
+@BitterBladeTrad damn this is cool asf
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 36
+
+--- REPLY 99 | 2026-03-09 ---
+@moonbreonbaby @simpleeemi LET’S GOOOO https://t.co/y8OFouFDJr
+Likes: 2  Retweets: 0  Replies: 0  Impressions: 14
+
+--- REPLY 100 | 2026-03-09 ---
+@SALAMANDER12_ fr i get the needddd!
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 11
+
+=== @gacha_game_ — Reply (Part 2 of 3) ===
+Tweets in this file: 100
+
+--- REPLY 1 | 2026-03-09 ---
+@Denx_Sol i’m sure you do &lt;3
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 12
+
+--- REPLY 2 | 2026-03-09 ---
+@MINHxDYNASTY burger king burgers still hit diff to this day
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 22
+
+--- REPLY 3 | 2026-03-09 ---
+@SALAMANDER12_ that design is peak https://t.co/rDQqtAeX5v
+Likes: 2  Retweets: 0  Replies: 0  Impressions: 39
+
+--- REPLY 4 | 2026-03-09 ---
+@MINHxDYNASTY yes!! this series is absolute peak
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 22
+
+--- REPLY 5 | 2026-03-09 ---
+@moonbreonbaby @actuallyrezy that was a certified banger pull 🔥
+Likes: 3  Retweets: 0  Replies: 1  Impressions: 55
+
+--- REPLY 6 | 2026-03-09 ---
+@shegroot happy monday saray https://t.co/kGL043ESiH
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 29
+
+--- REPLY 7 | 2026-03-09 ---
+@DeeZe @ripdotfun @mnstr @Beezie Gacha should be on that list 
+
+PSA graded cards, physical redemption, vaulted and shipped with @dyli_io  and a 95% buyback.
+
+We'll let the pulls speak for themselves
+check dm for a free pack
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 37
+
+--- REPLY 8 | 2026-03-09 ---
+@MrShyGuy_01 that’s straight fire man 🔥🔥
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 15
+
+--- REPLY 9 | 2026-03-09 ---
+@strong_hold that card is literally a need 🔥
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 15
+
+--- REPLY 10 | 2026-03-09 ---
+@cesarg0519 fr she really is the best!!
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 20
+
+--- REPLY 11 | 2026-03-09 ---
+@DabKing86 couldn't agree more!!
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 13
+
+--- REPLY 12 | 2026-03-09 ---
+@MINHxDYNASTY literally feel like it was january yesterday
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 44
+
+--- REPLY 13 | 2026-03-09 ---
+@aukeiitcg i love pichuuu
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 147
+
+--- REPLY 14 | 2026-03-09 ---
+@shegroot so true
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 36
+
+--- REPLY 15 | 2026-03-09 ---
+@KodyKennedyKK your collection is clean af 😮‍💨🔥
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 25
+
+--- REPLY 16 | 2026-03-09 ---
+@simpleeemi so cute!!
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 22
+
+--- REPLY 17 | 2026-03-09 ---
+@KDCOLLECTS this is the vibe
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 104
+
+--- REPLY 18 | 2026-03-09 ---
+@aukeiitcg your island is gorgeous!! &lt;3
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 1008
+
+--- REPLY 19 | 2026-03-09 ---
+@KDCOLLECTS we all got a little psyduck in us
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 395
+
+--- REPLY 20 | 2026-03-08 ---
+@poke_emilys happy women’s day emily
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 29
+
+--- REPLY 21 | 2026-03-08 ---
+@Nerd_Gasms have a safe travels man
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 36
+
+--- REPLY 22 | 2026-03-08 ---
+@maya_jillian75 happy women’s day maya
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 63
+
+--- REPLY 23 | 2026-03-08 ---
+@MINHxDYNASTY perspective is everything https://t.co/8xPYON9A5F
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 138
+
+--- REPLY 24 | 2026-03-08 ---
+@SALAMANDER12_ iykyk 👀
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 49
+
+--- REPLY 25 | 2026-03-08 ---
+@jiminy_crypto clean af congrats bro 🔥🔥
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 48
+
+--- REPLY 26 | 2026-03-08 ---
+@PZPTCG gm preston 
+
+such a cute card
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 29
+
+--- REPLY 27 | 2026-03-08 ---
+@KylosWeb3 manifesting that pull for you man 🙏
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 18
+
+--- REPLY 28 | 2026-03-08 ---
+@CryptoLeven ngl this made me laugh when i pulled one 😭
+Likes: 1  Retweets: 0  Replies: 1  Impressions: 19
+
+--- REPLY 29 | 2026-03-08 ---
+@NewAgeCardKings this movie had me like this https://t.co/wYdeYrwFES
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 32
+
+--- REPLY 30 | 2026-03-08 ---
+@KDCOLLECTS trubbish is adorable 😭 he’s just a lil guyyy
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 50
+
+--- REPLY 31 | 2026-03-08 ---
+@shegroot hi
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 62
+
+--- REPLY 32 | 2026-03-08 ---
+@MINHxDYNASTY looks like she mogged every other kitten in there
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 40
+
+--- REPLY 33 | 2026-03-08 ---
+@0xBaumer yooo congrats!!
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 33
+
+--- REPLY 34 | 2026-03-08 ---
+@KDCOLLECTS he looks so cozy 😂
+Likes: 0  Retweets: 0  Replies: 0  Impressions: 58
+
+--- REPLY 35 | 2026-03-08 ---
+@MINHxDYNASTY this card is beautiful man
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 40
+
+--- REPLY 36 | 2026-03-08 ---
+@DabKing86 https://t.co/onjlomkWxU
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 7
+
+--- REPLY 37 | 2026-03-08 ---
+@SALAMANDER12_ thats it i’m getting pho 😁 thanks
+Likes: 1  Retweets: 0  Replies: 0  Impressions: 31
+
+--- REPLY 38 | 2026-03-08 ---
+@MINHxDYNASTY that’s the dream pu`;
+
+// ── STATE ──
+let mode = 'reply';
+let selectedCat = null;
+let selectedSit = null;
+let selectedTone = 'cool';
+let imgB64 = {reply:null, post:null};
+let selectedText = '';
+let convHistory = [];
+let loopCount = 0;
+let feedbackNotes = [];
+let currentMember = '';
+let sessionLogs = [];
+
+// ── SITUATIONS ──
+const sits = {
+  onepiece:[
+    {id:'pull_op',label:'🎴 User Pulled OP Card'},
+    {id:'lore',label:'📖 Lore Discussion'},
+    {id:'card_knowledge',label:'🃏 Card Deep Dive'},
+    {id:'fomo_op',label:'⏳ Create FOMO'},
+    {id:'community',label:'👥 Community Engagement'},
+    {id:'mention',label:'📣 Mentioned Gacha'},
+  ],
+  pokemon:[
+    {id:'pull_poke',label:'🎴 User Pulled Poke Card'},
+    {id:'card_knowledge_poke',label:'🃏 Card Deep Dive'},
+    {id:'fomo_poke',label:'⏳ Create FOMO'},
+    {id:'community_poke',label:'👥 Community Engagement'},
+    {id:'mention',label:'📣 Mentioned Gacha'},
+  ],
+  brand:[
+    {id:'general_reply',label:'🎯 General Reply'},
+    {id:'redemption',label:'📦 User Redeemed'},
+    {id:'question',label:'❓ Asking About Gacha'},
+    {id:'competitor',label:'⚔️ Competitor Mention'},
+    {id:'giveaway',label:'🎁 Giveaway Winner'},
+    {id:'mention',label:'📣 Mentioned Gacha'},
+  ],
+  general:[
+    {id:'general_reply',label:'🎯 General Reply'},
+    {id:'trending',label:'📈 Trending Topic'},
+    {id:'engagement',label:'💬 Engagement Post'},
+    {id:'fomo_gen',label:'⏳ Create FOMO'},
+  ]
+};
+
+const toneLabels = {
+  hype:'energetic and hype, use emojis naturally 🔥💀',
+  cool:'cool, confident, understated — let the product speak',
+  lore:'lead with deep lore knowledge, show you know the hobby inside out',
+  funny:'funny and self-aware with 💀 energy',
+  short:'extremely short and punchy — max 2 lines, every word counts'
+};
+
+const catLabels = {
+  onepiece:'One Piece TCG',
+  pokemon:'Pokémon TCG',
+  brand:'Brand / Gacha Platform',
+  general:'General Community'
+};
+
+// ── GATE ──
+function checkPass() {
+  const member = document.getElementById('memberSelect').value;
+  const pass = document.getElementById('gateInput').value;
+  if (!member) { document.getElementById('gateError').textContent = 'Please select your name.'; return; }
+  if (pass !== PASS) { document.getElementById('gateError').textContent = 'Wrong password. Try again.'; return; }
+  currentMember = member;
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').classList.add('show');
+  document.getElementById('userBadge').textContent = '🎴 ' + member;
+  loadLogPanel();
+}
+
+// ── MODE ──
+function setMode(m) {
+  mode = m;
+  document.getElementById('modeReply').classList.toggle('active', m==='reply');
+  document.getElementById('modePost').classList.toggle('active', m==='post');
+  document.getElementById('replyMode').style.display = m==='reply'?'block':'none';
+  document.getElementById('postMode').style.display = m==='post'?'block':'none';
+  resetResults();
+}
+
+// ── CATEGORY / SITUATION / TONE ──
+function selectCat(btn) {
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedCat = btn.dataset.cat;
+  selectedSit = null;
+  const grid = document.getElementById('sitGrid');
+  grid.innerHTML = '';
+  (sits[selectedCat]||[]).forEach(s=>{
+    const b = document.createElement('button');
+    b.className='sit-btn'; b.dataset.sit=s.id; b.textContent=s.label;
+    b.onclick=()=>selectSit(b);
+    grid.appendChild(b);
+  });
+  document.getElementById('sitWrap').classList.add('show');
+}
+
+function selectSit(btn) {
+  document.querySelectorAll('.sit-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedSit = btn.dataset.sit;
+}
+
+function selectTone(btn) {
+  document.querySelectorAll('.tone-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedTone = btn.dataset.tone;
+}
+
+// ── IMAGE HANDLING ──
+document.addEventListener('paste', e=>{
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      readImg(item.getAsFile(), mode);
+      break;
+    }
+  }
+});
+
+['replyZone','postZone'].forEach(id=>{
+  const zone = document.getElementById(id);
+  const key = id.replace('Zone','');
+  zone.addEventListener('dragover', e=>{e.preventDefault();zone.classList.add('drag');});
+  zone.addEventListener('dragleave', ()=>zone.classList.remove('drag'));
+  zone.addEventListener('drop', e=>{
+    e.preventDefault(); zone.classList.remove('drag');
+    const f = e.dataTransfer.files[0];
+    if (f?.type.startsWith('image/')) readImg(f, key);
+  });
+});
+
+function handleFile(input, key) {
+  if (input.files[0]) readImg(input.files[0], key);
+}
+
+function readImg(file, key) {
+  const r = new FileReader();
+  r.onload = e=>{
+    imgB64[key] = e.target.result.split(',')[1];
+    const zone = document.getElementById(key+'Zone');
+    zone.innerHTML = '<img src="'+e.target.result+'"/><button class="remove-img" onclick="removeImg(''+key+'')">✕</button>';
+  };
+  r.readAsDataURL(file);
+}
+
+function removeImg(key) {
+  imgB64[key]=null;
+  const zone = document.getElementById(key+'Zone');
+  zone.innerHTML='<p>📋 Ctrl+V to paste screenshot directly</p><p class="hint">or click to browse</p>';
+}
+
+// ── SYSTEM PROMPT ──
+function buildSystem() {
+  return `You are the official Twitter/X voice for @gacha_game_ — a platform where users open digital packs containing real PSA-graded TCG cards (One Piece and Pokémon). Cards can be physically redeemed and shipped globally, or sold back at 95% buyback.
+
+═══ BRAND VOICE (learn from these real tweets) ═══
+Study these carefully — this is the exact voice to match:
+
+ORIGINAL POSTS:
+${POSTS_DATA.slice(0,8000)}
+
+REPLIES:
+${REPLIES_DATA.slice(0,8000)}
+
+Key voice patterns from the data:
+- Short, punchy, human — "ong gotta respect the routine", "damn bro making it look easy"
+- Hype but never cringe — "lfgachaaa!!", "absolute W", "yuge af"
+- Warm community energy — "congraaats!!", "so happy for you man"
+- Collector respect — reacts to cards like a genuine fan, not a seller
+- Emoji use: 🔥💀👀🏴‍☠️⚡🎴🫡 — natural, never excessive
+- Never corporate. Never "Amazing!" or "So excited to share"
+- Uses "bro", "man", "my guy" naturally
+- "lfgacha" and "lfgachaaa" are brand callouts used in celebration
+
+═══ ONE PIECE KNOWLEDGE (accuracy is everything — community WILL fact-check) ═══
+Sets & Cards:
+- PRB01 "One Piece Card The Best": 10 manga alt arts. Nami is only R rarity — all others SR/SEC
+- OP05 "Awakening of the New Era": Luffy OP05-119 Manga Alt Art (SEC, ~$1,400+ raw) — depicts Gear 5 in Oda's original manga panel style
+- OP12: Contains 3rd Anniversary Gold cards — these are HIGH RARITY standard prints, NOT "limited milestone releases" (this was fact-checked publicly and called wrong)
+- Manga Alt Arts: Oda's original B&W manga panels as background, subject in full color
+- Rarities: C < UC < R < SR < SEC < SP/Promo
+- Championship promos and serialized cards = highest value
+
+Lore (only reference confirmed canon):
+- Nami / Arlong arc: Worked under Arlong years mapping seas to buy her village freedom. Luffy placing his straw hat saying "Then let's go" = one of the most iconic anime moments ever
+- Gear 5 / Luffy: True awakening as Nika/Sun God — white hair, laughing, rubber reality warping. OP05 captures this moment
+- Zoro / Thriller Bark: "Cut nothing for 2 years to cut everything when it mattered" — took all of Luffy's pain. Accurate reference for Zoro cards
+- Blackbeard: Warlord turned Yonko, dual devil fruit user — his cards are NOT limited, they are standard high rarity prints
+- Shanks, Roger, Big Mom, Kaido = Yonko tier
+
+═══ POKÉMON KNOWLEDGE ═══
+- Know set differences: Base Set, modern sets, alt arts, illustration rares, special illustration rares
+- PSA 10 Gem Mint = flawless grade, extremely tight supply on modern cards
+- Never call a standard print "limited"
+- Chase cards: Gold Stars, Alt Arts, Special Illustration Rares, vintage holos
+
+═══ GACHA PRODUCT FACTS ═══
+- Every pack = real PSA-graded cards (mostly PSA 10 GEM MT)
+- Grand Packs = premium packs with top chase cards
+- Physical redemption = we ship the actual graded card worldwide
+- 95% buyback = don't love your pull? Sell back for 95% of value
+- No fees, no middleman, no sketchy sellers
+- Discord: discord.gg/gacha-game
+- Website: pull.gacha.game/play/packs
+
+═══ CRITICAL RULES ═══
+1. NEVER call a standard print "limited" or "rare" unless it genuinely is
+2. NEVER fabricate card values — only state if certain
+3. NEVER make up lore — confirmed canon only
+4. If image is provided, describe what you SEE — do not assume details not visible
+5. Sound like a collector talking to collectors, never a brand talking to customers
+6. Web search has been used to find current accurate card/market info — use it
+
+═══ OUTPUT FORMAT ═══
+Return exactly 3 options. Use this exact format, nothing else:
+
+OPTION 1:
+[tweet text]
+
+OPTION 2:
+[tweet text]
+
+OPTION 3:
+[tweet text]`;
+}
+
+// ── GENERATE ──
+async function generate() {
+  if (!selectedCat) { showError('Please select a category.'); return; }
+  if (!selectedSit) { showError('Please select a situation type.'); return; }
+  const inputText = mode==='reply'
+    ? document.getElementById('replyText').value.trim()
+    : document.getElementById('postDesc').value.trim();
+  if (!inputText) { showError(mode==='reply'?'Paste the tweet to reply to.':'Describe the post you want to make.'); return; }
+
+  setLoading(true);
+  hideError();
+  resetResults();
+  convHistory = [];
+  loopCount = 0;
+  feedbackNotes = [];
+
+  const userContent = buildUserContent(inputText, imgB64[mode]);
+  convHistory.push({role:'user', content:userContent});
+
+  try {
+    showSearchStatus('🔍 Searching for current card & market info...');
+    const text = await callAPI(convHistory, true);
+    hideSearchStatus();
+    convHistory.push({role:'assistant', content:text});
+    loopCount++;
+    showOptions(text);
+  } catch(e) {
+    showError('Error: '+e.message);
+    hideSearchStatus();
+  } finally {
+    setLoading(false);
+  }
+}
+
+function buildUserContent(inputText, img) {
+  const modeContext = mode==='reply'
+    ? 'Reply to this tweet as @gacha_game_:
+"'+inputText+'"'
+    : 'Create an original tweet as @gacha_game_ about:
+'+inputText;
+
+  const msg = modeContext+'
+
+Category: '+catLabels[selectedCat]+'
+Situation: '+selectedSit+'
+Tone: '+toneLabels[selectedTone]+'
+
+Generate 3 options.';
+
+  if (img) {
+    return [
+      {type:'image', source:{type:'base64', media_type:'image/png', data:img}},
+      {type:'text', text:msg+'
+
+(Image provided above — use it for context but only reference what you can actually see. Do not fabricate card details.)'}
+    ];
+  }
+  return msg;
+}
+
+// ── REFINE ──
+async function refine() {
+  const note = document.getElementById('refineInput').value.trim();
+  if (!note || !selectedText) return;
+  setRefineLoading(true);
+  feedbackNotes.push(note);
+  convHistory.push({
+    role:'user',
+    content:'I selected this option:
+"'+selectedText+'"
+
+Feedback: '+note+'
+
+Generate 3 improved options applying this feedback.'
+  });
+  try {
+    showSearchStatus('🔍 Refining with latest data...');
+    const text = await callAPI(convHistory, false);
+    hideSearchStatus();
+    convHistory.push({role:'assistant', content:text});
+    loopCount++;
+    document.getElementById('refineInput').value='';
+    showOptions(text);
+    document.getElementById('loopNum').textContent = loopCount;
+  } catch(e) {
+    showError('Error: '+e.message);
+    hideSearchStatus();
+  } finally {
+    setRefineLoading(false);
+  }
+}
+
+// ── API CALL ──
+async function callAPI(messages, useSearch) {
+  const body = {
+    model:'claude-sonnet-4-20250514',
+    max_tokens:1000,
+    system:buildSystem(),
+    messages
+  };
+  if (useSearch) {
+    body.tools = [{type:'web_search_20250305', name:'web_search'}];
+  }
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01'},
+    body:JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.error?.message||'HTTP '+res.status);
+  }
+  const data = await res.json();
+  return data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+}
+
+// ── SHOW OPTIONS ──
+function showOptions(text) {
+  const lines = text.split('
+');
+  const options = [];
+  let cur = ''; let inOpt = false;
+  for (const line of lines) {
+    if (/^OPTION \d+:/i.test(line.trim())) {
+      if (cur.trim()) options.push(cur.trim());
+      cur=''; inOpt=true;
+    } else if (inOpt) {
+      cur += (cur?'
+':'')+line;
+    }
+  }
+  if (cur.trim()) options.push(cur.trim());
+
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML='';
+  options.forEach((opt,i)=>{
+    const chars=opt.length;
+    const div=document.createElement('div');
+    div.className='reply-option';
+    div.innerHTML='<div class="opt-label"><span>Option '+(i+1)+'</span><span class="opt-chars'+(chars>280?' over':'')+'">'+chars+'/280</span></div><div class="opt-text">'+esc(opt)+'</div>';
+    div.onclick=()=>selectOpt(opt,div);
+    container.appendChild(div);
+  });
+  document.getElementById('loopNum').textContent=loopCount;
+  document.getElementById('resultsWrap').style.display='block';
+  document.getElementById('resultsWrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function selectOpt(text, el) {
+  document.querySelectorAll('.reply-option').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedText=text;
+  document.getElementById('selectedDisplay').textContent=text;
+  document.getElementById('editorWrap').style.display='block';
+  document.getElementById('editorWrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function copySelected() {
+  navigator.clipboard.writeText(selectedText).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    btn.textContent='✅ Copied!'; btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='📋 Copy Tweet';btn.classList.remove('copied');},2000);
+  });
+}
+
+// ── FINISH SESSION ──
+async function finishSession() {
+  if (!selectedText) { resetAll(); return; }
+  const logEntry = {
+    team_member: currentMember,
+    mode, category: selectedCat, situation: selectedSit, tone: selectedTone,
+    loops: loopCount,
+    feedback_notes: feedbackNotes.join(' | '),
+    final_tweet: selectedText
+  };
+  sessionLogs.push({...logEntry, created_at: new Date().toISOString()});
+  try {
+    await fetch(SUPABASE_URL+'/rest/v1/session_logs', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Prefer':'return=minimal'},
+      body:JSON.stringify(logEntry)
+    });
+  } catch(e){ console.log('Log save failed:', e); }
+  updateLogPanel();
+  resetAll();
+}
+
+// ── LOG PANEL ──
+function loadLogPanel() {
+  document.getElementById('logPanel').style.display='block';
+  updateLogPanel();
+}
+
+function updateLogPanel() {
+  const container = document.getElementById('logEntries');
+  if (!sessionLogs.length) {
+    container.innerHTML='<div class="log-empty">No sessions logged yet.</div>';
+    return;
+  }
+  container.innerHTML = [...sessionLogs].reverse().map(log=>`
+    <div class="log-entry">
+      <div class="log-entry-header">
+        <span>${log.team_member}</span>
+        <span>${log.mode}</span>
+        <span>${log.category}</span>
+        <span>${log.tone}</span>
+        <span class="loops-badge">🔄 ${log.loops} loop${log.loops!==1?'s':''}</span>
+        <span>${new Date(log.created_at).toLocaleTimeString()}</span>
+      </div>
+      ${log.feedback_notes?'<div style="font-size:11px;color:var(--muted2);margin-bottom:4px;">Feedback: '+esc(log.feedback_notes)+'</div>':''}
+      <div class="log-tweet">${esc(log.final_tweet)}</div>
+    </div>`).join('');
+}
+
+function downloadLog() {
+  if (!sessionLogs.length) return;
+  const text = sessionLogs.map(l=>
+    `[${l.created_at}] ${l.team_member} | ${l.mode} | ${l.category} | ${l.tone} | loops:${l.loops}
+Feedback: ${l.feedback_notes||'none'}
+Tweet: ${l.final_tweet}
+---`
+  ).join('
+');
+  const a=document.createElement('a');
+  a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(text);
+  a.download='gacha_session_log_'+new Date().toISOString().slice(0,10)+'.txt';
+  a.click();
+}
+
+// ── RESET ──
+function resetAll() {
+  resetResults();
+  document.getElementById('replyText').value='';
+  document.getElementById('postDesc').value='';
+  removeImg('reply'); removeImg('post');
+  document.querySelectorAll('.cat-btn,.sit-btn').forEach(b=>b.classList.remove('active'));
+  selectedCat=null; selectedSit=null;
+  document.getElementById('sitWrap').classList.remove('show');
+  convHistory=[]; loopCount=0; feedbackNotes=[];
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function resetResults() {
+  document.getElementById('resultsWrap').style.display='none';
+  document.getElementById('optionsContainer').innerHTML='';
+  document.getElementById('editorWrap').style.display='none';
+  selectedText='';
+}
+
+// ── HELPERS ──
+function setLoading(on) {
+  document.getElementById('genLabel').textContent=on?'GENERATING...':'GENERATE';
+  document.getElementById('genSpinner').style.display=on?'inline-block':'none';
+  document.getElementById('genBtn').disabled=on;
+}
+function setRefineLoading(on) {
+  document.getElementById('refineLabel').textContent=on?'Working...':'Regenerate';
+  document.getElementById('refineSpinner').style.display=on?'inline-block':'none';
+  document.getElementById('refineBtn').disabled=on;
+}
+function showError(msg){const el=document.getElementById('errorBox');el.textContent=msg;el.classList.add('show');}
+function hideError(){document.getElementById('errorBox').classList.remove('show');}
+function showSearchStatus(msg){const el=document.getElementById('searchStatus');el.innerHTML='<span class="search-dot"></span>'+msg;}
+function hideSearchStatus(){document.getElementById('searchStatus').innerHTML='';}
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>
