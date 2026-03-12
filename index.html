@@ -1735,8 +1735,7 @@ async function callAPI(messages, useSearch) {
 
 // ── SHOW OPTIONS ──
 function showOptions(text) {
-  const lines = text.split('
-');
+  const lines = text.split('\n');
   const options = [];
   let cur = ''; let inOpt = false;
   for (const line of lines) {
@@ -1744,8 +1743,7 @@ function showOptions(text) {
       if (cur.trim()) options.push(cur.trim());
       cur=''; inOpt=true;
     } else if (inOpt) {
-      cur += (cur?'
-':'')+line;
+      cur += (cur?'\n':'')+line;
     }
   }
   if (cur.trim()) options.push(cur.trim());
@@ -1838,8 +1836,7 @@ function downloadLog() {
 Feedback: ${l.feedback_notes||'none'}
 Tweet: ${l.final_tweet}
 ---`
-  ).join('
-');
+  ).join('\n');
   const a=document.createElement('a');
   a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(text);
   a.download='gacha_session_log_'+new Date().toISOString().slice(0,10)+'.txt';
